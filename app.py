@@ -50,12 +50,32 @@ def clear_listbox():
     listbox.delete(0, tk.END)  # Clear the listbox
     filename_to_path.clear() 
 
+def apply_dark_theme(widget):
+    widget_type = widget.winfo_class()
+    if widget_type in ["Frame", "Tk", "Toplevel"]:
+        widget.config(bg=dark_bg)
+    elif widget_type == "Listbox":
+        widget.config(bg=dark_bg, fg=dark_fg, highlightcolor=accent_color, selectbackground=accent_color)
+    elif widget_type == "Button":
+        widget.config(bg=dark_bg, fg=dark_fg, activebackground=accent_color)
+    # Add more conditions for other widget types as needed
+
+#Colour palette
+dark_bg = "#333333"  # Dark background color
+dark_fg = "#ffffff"  # Light text color
+accent_color = "#0078D7"  # Accent color for buttons or highlights
+
+
 # Set up the GUI
 root = TkinterDnD.Tk()
 root.title("Bulk Rename Utility for Office")
 
+# Apply dark theme to the main window
+apply_dark_theme(root)
+
 frame = tk.Frame(root)
-frame.pack(pady=20, fill=tk.BOTH, expand=True)  # Ensure the frame expands
+frame.pack(pady=20, fill=tk.BOTH, expand=True)
+apply_dark_theme(frame)  # Apply dark theme to the frame
 
 listbox = tk.Listbox(frame)  # Associate the Listbox with the frame
 listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)  # Make sure it fills the frame
@@ -87,13 +107,13 @@ mode_radio2.pack(side=tk.LEFT, padx=5)
 
 mode_var.set(1)
 
-add_button = tk.Button(button_frame, text="Add Files", command=select_files)
+add_button = tk.Button(button_frame, text="เพิ่มไฟล์", command=select_files)
 add_button.pack(side=tk.LEFT, padx=5)
 
-clear_button = tk.Button(button_frame, text="Clear", command=clear_listbox)
+clear_button = tk.Button(button_frame, text="เคลียร์", command=clear_listbox)
 clear_button.pack(side=tk.LEFT, padx=5)
 
-rename_button = tk.Button(root, text="Rename Files", command=rename_files)
+rename_button = tk.Button(root, text="เปลี่ยนชื่อไฟล์", command=rename_files)
 rename_button.pack(pady=5)
 
 root.mainloop()
