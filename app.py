@@ -4,6 +4,7 @@ from tkinter import ttk
 import openpyxl
 import os
 from tkinterdnd2 import TkinterDnD
+from tkinter import messagebox
 
 filename_to_path = {}
 
@@ -16,10 +17,12 @@ def select_files():
         filename_to_path[filename] = file
 
 def rename_files():
-        for filename in treeView.get(0, tk.END):
-            file_path = filename_to_path[filename]  # Retrieve the full path
+        warning = False
+        for filename in treeView.get_children():
+            original_text = treeView.item(filename, 'text') 
+            file_path = filename_to_path[treeView.item(filename, 'text')]  # Retrieve the full path
             workbook = openpyxl.load_workbook(file_path)
-            if mode_var.get() == 1:
+            if status_combobox.get() == "รายชื่อนักเรียน":
                 sheet = workbook.worksheets[0]
                 cell_value = sheet['B5'].value.split(" ")
                 if cell_value[0].startswith("ม."):
@@ -33,10 +36,21 @@ def rename_files():
             directory = os.path.dirname(file_path)
             new_file_path = os.path.join(directory, fileName)
 
+            if os.path.exists(new_file_path):
+                messagebox.showwarning("Operation Aborted", f"File {fileName} already exists. Operation aborted to prevent overwriting.")
+                continue  # Skip the renaming for this file
+
             # Rename the file
             os.rename(file_path, new_file_path)
+            # Remove the renamed file from filename_to_path dictionary
+            del filename_to_path[original_text]
+
+            # Remove the item from treeView
+            treeView.delete(filename)
 
             print(f"Renamed '{file_path}' to '{new_file_path}'")
+        messagebox.showinfo("เสร็จสิ้น", "เปลี่ยนชื่อไฟล์เสร็จสิ้น")
+
 
 # Function to handle drag-and-drop file selection
 def handle_drop(event):
@@ -78,10 +92,10 @@ style.theme_use("forest-dark")
 frame = ttk.Frame(root)
 frame.pack(fill='both', expand=True)
 
-widgets_frame = ttk.LabelFrame(frame, text="Configuration", height=10)
+widgets_frame = ttk.LabelFrame(frame, text="การตั้งค่า", height=10)
 widgets_frame.grid(row=0, column=0, padx=10, pady= 10, sticky="nsew")
 frame.rowconfigure(0, weight=1)  # Allow widgets_frame to expand vertically
-
+frame.columnconfigure(0, weight=1)  # Allow widgets_frame to expand horizontally
 
 # Place the status_combobox at the top
 status_combobox = ttk.Combobox(widgets_frame, values=["รายชื่อนักเรียน", "เกรดเฉลี่ย"], state="readonly")
@@ -120,44 +134,5 @@ treeView.pack()
 treeView.drop_target_register('DND_Files')
 treeView.dnd_bind('<<Drop>>', handle_drop)
 treeFrame.columnconfigure(0, weight=1)
-
-# boxScroll = ttk.Scrollbar(listbox)
-# boxScroll.pack(side="right", fill="y")
-
-# # # Apply dark theme to the main window
-# apply_dark_theme(root)
-
-# frame = tk.Frame(root)
-# frame.pack(pady=20, fill=tk.BOTH, expand=True)
-# apply_dark_theme(frame)  # Apply dark theme to the frame
-
-
-
-
-# scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=listbox.yview)
-# scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-
-# listbox.config(yscrollcommand=scrollbar.set)
-
-# mode_var = tk.BooleanVar()
-# mode_var.set(False)  # Default mode
-
-# mode_frame = tk.Frame(root)
-# mode_frame.pack(pady=10)
-
-
-# # Mode 1 selection Radiobutton in mode_frame
-# mode_radio1 = tk.Radiobutton(mode_frame, text="รายชื่อนักเรียน", variable=mode_var, value=1)
-# mode_radio1.pack(side=tk.LEFT, padx=5)
-
-# # Mode 2 selection Radiobutton in mode_frame
-# mode_radio2 = tk.Radiobutton(mode_frame, text="เกรดเฉลี่ย", variable=mode_var, value=2)
-# mode_radio2.pack(side=tk.LEFT, padx=5)
-
-# mode_var.set(1)
-
-
-
-
 
 root.mainloop()
