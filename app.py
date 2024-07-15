@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import ttk
 import openpyxl
 import os
-import tkinter as tk
 from tkinterdnd2 import TkinterDnD
 
 filename_to_path = {}
@@ -12,11 +12,11 @@ def select_files():
     files = filedialog.askopenfilenames(filetypes=[("Excel files", "*.xlsx")])
     for file in files:
         filename = os.path.basename(file) 
-        listbox.insert(tk.END, filename)
+        treeView.insert("", tk.END, text=filename, values=(filename,))
         filename_to_path[filename] = file
 
 def rename_files():
-        for filename in listbox.get(0, tk.END):
+        for filename in treeView.get(0, tk.END):
             file_path = filename_to_path[filename]  # Retrieve the full path
             workbook = openpyxl.load_workbook(file_path)
             if mode_var.get() == 1:
@@ -43,11 +43,12 @@ def handle_drop(event):
     files = root.tk.splitlist(event.data)  # Extract the list of dropped files
     for file in files:
         filename = os.path.basename(file)
-        listbox.insert(tk.END, filename)
+        treeView.insert("", tk.END, text=filename, values=(filename,))
         filename_to_path[filename] = file  # Update the mapping
 
 def clear_listbox():
-    listbox.delete(0, tk.END)  # Clear the listbox
+    for item in treeView.get_children():
+        treeView.delete(item)
     filename_to_path.clear() 
 
 def apply_dark_theme(widget):
@@ -70,50 +71,93 @@ accent_color = "#0078D7"  # Accent color for buttons or highlights
 root = TkinterDnD.Tk()
 root.title("Bulk Rename Utility for Office")
 
-# Apply dark theme to the main window
-apply_dark_theme(root)
+style = ttk.Style(root)
+root.tk.call("source", "forest-dark.tcl")
+style.theme_use("forest-dark")
+ 
+frame = ttk.Frame(root)
+frame.pack(fill='both', expand=True)
 
-frame = tk.Frame(root)
-frame.pack(pady=20, fill=tk.BOTH, expand=True)
-apply_dark_theme(frame)  # Apply dark theme to the frame
-
-listbox = tk.Listbox(frame)  # Associate the Listbox with the frame
-listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)  # Make sure it fills the frame
-listbox.drop_target_register('DND_Files')
-listbox.dnd_bind('<<Drop>>', handle_drop)
+widgets_frame = ttk.LabelFrame(frame, text="Configuration", height=10)
+widgets_frame.grid(row=0, column=0, padx=10, pady= 10, sticky="nsew")
+frame.rowconfigure(0, weight=1)  # Allow widgets_frame to expand vertically
 
 
-scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=listbox.yview)
-scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+# Place the status_combobox at the top
+status_combobox = ttk.Combobox(widgets_frame, values=["รายชื่อนักเรียน", "เกรดเฉลี่ย"], state="readonly")
+status_combobox.current(0)
+status_combobox.grid(row=0, column=0, padx=5, pady = (0,5) ,sticky="ew")
+widgets_frame.columnconfigure(0, weight=1)  # Make the combobox expand horizontally
 
-listbox.config(yscrollcommand=scrollbar.set)
+# Move the button_frame below the status_combobox
+button_frame = tk.Frame(widgets_frame)
+button_frame.grid(row=2, pady= 5, column=0, sticky="ew")
+button_frame.columnconfigure(0, weight=1)
+button_frame.columnconfigure(1, weight=1)
 
-mode_var = tk.BooleanVar()
-mode_var.set(False)  # Default mode
 
-mode_frame = tk.Frame(root)
-mode_frame.pack(pady=10)
+separator = ttk.Separator(widgets_frame)
+separator.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
 
-button_frame = tk.Frame(root)
-button_frame.pack(pady=10)
+# Adjust the row numbers for add_button and clear_button to be sequential within button_frame
+add_button = ttk.Button(button_frame, text="เพิ่มไฟล์", command=select_files)
+add_button.grid(row=0, column=0, padx=5, pady=5, sticky="ew")
 
-# Mode 1 selection Radiobutton in mode_frame
-mode_radio1 = tk.Radiobutton(mode_frame, text="รายชื่อนักเรียน", variable=mode_var, value=1)
-mode_radio1.pack(side=tk.LEFT, padx=5)
+clear_button = ttk.Button(button_frame, text="เคลียร์", command=clear_listbox)
+clear_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
-# Mode 2 selection Radiobutton in mode_frame
-mode_radio2 = tk.Radiobutton(mode_frame, text="เกรดเฉลี่ย", variable=mode_var, value=2)
-mode_radio2.pack(side=tk.LEFT, padx=5)
+rename_button = ttk.Button(button_frame, text="เปลี่ยนชื่อไฟล์", command=rename_files)
+rename_button.grid(row=1, column=0, padx =5, columnspan=2, sticky="nsew")
 
-mode_var.set(1)
+treeFrame = ttk.Frame(frame)
+treeFrame.grid(row=0, column=1, pady=10)
 
-add_button = tk.Button(button_frame, text="เพิ่มไฟล์", command=select_files)
-add_button.pack(side=tk.LEFT, padx=5)
+treeScroll = ttk.Scrollbar(treeFrame)
+treeScroll.pack(side="right", fill="y")
 
-clear_button = tk.Button(button_frame, text="เคลียร์", command=clear_listbox)
-clear_button.pack(side=tk.LEFT, padx=5)
+treeView = ttk.Treeview(treeFrame, columns=(1,2,3), show="", height="13")
+treeView.pack()
+treeView.drop_target_register('DND_Files')
+treeView.dnd_bind('<<Drop>>', handle_drop)
+treeFrame.columnconfigure(0, weight=1)
 
-rename_button = tk.Button(root, text="เปลี่ยนชื่อไฟล์", command=rename_files)
-rename_button.pack(pady=5)
+# boxScroll = ttk.Scrollbar(listbox)
+# boxScroll.pack(side="right", fill="y")
+
+# # # Apply dark theme to the main window
+# apply_dark_theme(root)
+
+# frame = tk.Frame(root)
+# frame.pack(pady=20, fill=tk.BOTH, expand=True)
+# apply_dark_theme(frame)  # Apply dark theme to the frame
+
+
+
+
+# scrollbar = tk.Scrollbar(frame, orient=tk.VERTICAL, command=listbox.yview)
+# scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+# listbox.config(yscrollcommand=scrollbar.set)
+
+# mode_var = tk.BooleanVar()
+# mode_var.set(False)  # Default mode
+
+# mode_frame = tk.Frame(root)
+# mode_frame.pack(pady=10)
+
+
+# # Mode 1 selection Radiobutton in mode_frame
+# mode_radio1 = tk.Radiobutton(mode_frame, text="รายชื่อนักเรียน", variable=mode_var, value=1)
+# mode_radio1.pack(side=tk.LEFT, padx=5)
+
+# # Mode 2 selection Radiobutton in mode_frame
+# mode_radio2 = tk.Radiobutton(mode_frame, text="เกรดเฉลี่ย", variable=mode_var, value=2)
+# mode_radio2.pack(side=tk.LEFT, padx=5)
+
+# mode_var.set(1)
+
+
+
+
 
 root.mainloop()
