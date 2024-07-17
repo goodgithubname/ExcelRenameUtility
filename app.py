@@ -17,20 +17,29 @@ def select_files():
         filename_to_path[filename] = file
 
 def rename_files():
-        warning = False
+        if treeView.get_children() == ():
+            return
         for filename in treeView.get_children():
             original_text = treeView.item(filename, 'text') 
             file_path = filename_to_path[treeView.item(filename, 'text')]  # Retrieve the full path
             workbook = openpyxl.load_workbook(file_path)
             if status_combobox.get() == "รายชื่อนักเรียน":
                 sheet = workbook.worksheets[0]
-                cell_value = sheet['B5'].value.split(" ")
-                if cell_value[0].startswith("ม."):
-                    fileName = cell_value[0].replace("ม.", "m")
-                elif cell_value[0].startswith("ป."):
-                    fileName = cell_value[0].replace("ป.", "p")
+                class_cell = sheet['B5'].value.split(" ")
+                if class_cell[0].startswith("ม."):
+                    fileName = class_cell[0].replace("ม.", "m")
+                elif class_cell[0].startswith("ป."):
+                    fileName = class_cell[0].replace("ป.", "p")
                 fileName = fileName.replace("/", "-")
-                
+            elif  status_combobox.get() == "ผลการเรียน":
+                sheet = workbook.worksheets[0]
+                class_cell = sheet['E2'].value.split(" ")
+                year_cell = sheet['A2'].value.split(" ")
+                if class_cell[1].startswith("ป."):
+                    fileName = f"p-{class_cell[3]} {year_cell[4]}"
+                elif class_cell[1].startswith("ม."):
+                    fileName = f"m-{class_cell[3]} term{year_cell[1]}-{year_cell[3]}"
+ 
             if not fileName.endswith('.xlsx'):
                 fileName += '.xlsx'
             directory = os.path.dirname(file_path)
@@ -98,7 +107,7 @@ frame.rowconfigure(0, weight=1)  # Allow widgets_frame to expand vertically
 frame.columnconfigure(0, weight=1)  # Allow widgets_frame to expand horizontally
 
 # Place the status_combobox at the top
-status_combobox = ttk.Combobox(widgets_frame, values=["รายชื่อนักเรียน", "เกรดเฉลี่ย"], state="readonly")
+status_combobox = ttk.Combobox(widgets_frame, values=["รายชื่อนักเรียน", "ผลการเรียน"], state="readonly")
 status_combobox.current(0)
 status_combobox.grid(row=0, column=0, padx=5, pady = (0,5) ,sticky="ew")
 widgets_frame.columnconfigure(0, weight=1)  # Make the combobox expand horizontally
@@ -122,6 +131,13 @@ clear_button.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
 
 rename_button = ttk.Button(button_frame, text="เปลี่ยนชื่อไฟล์", command=rename_files)
 rename_button.grid(row=1, column=0, padx =5, columnspan=2, sticky="nsew")
+
+gif_image = tk.PhotoImage(file="raccoon-dance.gif")
+
+gif_label = tk.Label(widgets_frame, image=gif_image)
+gif_label.image = gif_image
+
+gif_label.grid(row=3, column=0, padx=5, pady=5)
 
 treeFrame = ttk.Frame(frame)
 treeFrame.grid(row=0, column=1, pady=10)
