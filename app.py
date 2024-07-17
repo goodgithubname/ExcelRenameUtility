@@ -1,10 +1,10 @@
 import tkinter as tk
-from tkinter import filedialog
-from tkinter import ttk
+from tkinter import filedialog, ttk, messagebox
 import openpyxl
 import os
 from tkinterdnd2 import TkinterDnD
-from tkinter import messagebox
+from tkinterdnd2 import DND_FILES, TclError
+import sys
 
 filename_to_path = {}
 
@@ -93,6 +93,17 @@ accent_color = "#0078D7"  # Accent color for buttons or highlights
 # Set up the GUI
 root = TkinterDnD.Tk()
 root.title("Bulk Rename Utility for Office")
+
+# Dynamically determine the path to 'forest-dark.tcl'
+if getattr(sys, 'frozen', False):
+    # If the application is run as a bundle, the PyInstaller bootloader
+    # extends the sys module by a flag frozen=True and sets the app 
+    # path into variable _MEIPASS'.
+    application_path = sys._MEIPASS
+else:
+    application_path = os.path.dirname(os.path.abspath(__file__))
+
+theme_path = os.path.join(application_path, "forest-dark.tcl")
 
 style = ttk.Style(root)
 root.tk.call("source", "forest-dark.tcl")

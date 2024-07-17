@@ -2,6 +2,7 @@ from cx_Freeze import setup, Executable
 
 build_exe_options = {
     "packages": ["os", "tkinter", "openpyxl", "tkinterdnd2"],
+    "include_files": [("path/to/forest-dark.tcl", "forest-dark.tcl")],  # Add this line
 }
 
 base="Win32GUI"
