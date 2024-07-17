@@ -66,29 +66,15 @@ def handle_drop(event):
     files = root.tk.splitlist(event.data)  # Extract the list of dropped files
     for file in files:
         filename = os.path.basename(file)
-        treeView.insert("", tk.END, text=filename, values=(filename,))
-        filename_to_path[filename] = file  # Update the mapping
+        _, ext = os.path.splitext(filename)  # Extract the file extension
+        if ext.lower() == '.xlsx':  # Check if the file is an Excel file
+            treeView.insert("", tk.END, text=filename, values=(filename,))
+            filename_to_path[filename] = file  # Update the mapping
 
 def clear_listbox():
     for item in treeView.get_children():
         treeView.delete(item)
     filename_to_path.clear() 
-
-def apply_dark_theme(widget):
-    widget_type = widget.winfo_class()
-    if widget_type in ["Frame", "Tk", "Toplevel"]:
-        widget.config(bg=dark_bg)
-    elif widget_type == "Listbox":
-        widget.config(bg=dark_bg, fg=dark_fg, highlightcolor=accent_color, selectbackground=accent_color)
-    elif widget_type == "Button":
-        widget.config(bg=dark_bg, fg=dark_fg, activebackground=accent_color)
-    # Add more conditions for other widget types as needed
-
-#Colour palette
-dark_bg = "#333333"  # Dark background color
-dark_fg = "#ffffff"  # Light text color
-accent_color = "#0078D7"  # Accent color for buttons or highlights
-
 
 # Set up the GUI
 root = TkinterDnD.Tk()
