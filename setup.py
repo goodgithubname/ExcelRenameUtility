@@ -1,8 +1,11 @@
 from cx_Freeze import setup, Executable
+import glob
+
+png_files = glob.glob('*.png')
 
 build_exe_options = {
     "packages": ["os", "tkinter", "openpyxl", "tkinterdnd2"],
-    "include_files": [("path/to/forest-dark.tcl", "forest-dark.tcl")],  # Add this line
+    "include_files": [("forest-dark.tcl", "forest-dark.tcl")] + png_files,  # Modified line
 }
 
 base="Win32GUI"
