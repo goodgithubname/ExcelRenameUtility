@@ -3,7 +3,7 @@ from tkinter import filedialog, ttk, messagebox
 import openpyxl
 import os
 from tkinterdnd2 import TkinterDnD
-from tkinterdnd2 import DND_FILES, TclError
+from tkinterdnd2 import DND_FILES
 import sys
 
 filename_to_path = {}
