@@ -23,9 +23,11 @@ def rename_files():
             original_text = treeView.item(filename, 'text') 
             file_path = filename_to_path[treeView.item(filename, 'text')]  # Retrieve the full path
             workbook = openpyxl.load_workbook(file_path)
+            print()
             if status_combobox.get() == "รายชื่อนักเรียน":
                 sheet = workbook.worksheets[0]
                 class_cell = sheet['B5'].value.split(" ")
+                print(class_cell)
                 if class_cell[0].startswith("ม."):
                     fileName = class_cell[0].replace("ม.", "m")
                 elif class_cell[0].startswith("ป."):
@@ -35,18 +37,21 @@ def rename_files():
                 sheet = workbook.worksheets[0]
                 class_cell = sheet['E2'].value.split(" ")
                 year_cell = sheet['A2'].value.split(" ")
+                print(class_cell)
+                print(year_cell)
                 if class_cell[1].startswith("ป."):
-                    fileName = f"p-{class_cell[3]} {year_cell[4]}"
+                    fileName = f"p{class_cell[1][-1]}-{class_cell[3]} {year_cell[3]}"
                 elif class_cell[1].startswith("ม."):
-                    fileName = f"m-{class_cell[3]} term{year_cell[1]}-{year_cell[3]}"
+                    fileName = f"m{class_cell[1][-1]}-{class_cell[3]} term{year_cell[1]}-{year_cell[3]}"
  
             if not fileName.endswith('.xlsx'):
                 fileName += '.xlsx'
             directory = os.path.dirname(file_path)
             new_file_path = os.path.join(directory, fileName)
 
+            errors = []
             if os.path.exists(new_file_path):
-                messagebox.showwarning("Operation Aborted", f"File {fileName} already exists. Operation aborted to prevent overwriting.")
+                errors.append(fileName)
                 continue  # Skip the renaming for this file
 
             # Rename the file
@@ -58,6 +63,9 @@ def rename_files():
             treeView.delete(filename)
 
             print(f"Renamed '{file_path}' to '{new_file_path}'")
+        if errors:
+            error_message = "The following files already exist and were not renamed:\n" + "\n".join(errors)
+            messagebox.showwarning("Operation Aborted", error_message)
         messagebox.showinfo("เสร็จสิ้น", "เปลี่ยนชื่อไฟล์เสร็จสิ้น")
 
 
